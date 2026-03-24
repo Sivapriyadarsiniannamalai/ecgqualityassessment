@@ -36,8 +36,8 @@ warnings.filterwarnings("ignore")
 # ─────────────────────────────────────────────────────────────
 # USER CONFIG  ← adjust these two paths before running
 # ─────────────────────────────────────────────────────────────
-INPUT_DIR  = r"G:\ecg_project_op\ecg_data" # folder containing all .xlsx files
-OUTPUT_DIR = r"G:\ecg_project_op\ecg_outputs"      # where images / model are saved
+INPUT_DIR  = os.path.join(os.getcwd(), "ecg_data") # folder containing all .xlsx files
+OUTPUT_DIR = os.path.join(os.getcwd(), "ecg_outputs")      # where images / model are saved
 
 FS          = 1000   # sampling frequency (Hz)
 WINDOW      = 3000   # samples per window  (= 3 seconds)

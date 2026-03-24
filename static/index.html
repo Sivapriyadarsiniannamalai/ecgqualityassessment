@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECG Pulse — AI Signal Quality Assessment</title>
+    <meta name="description" content="AI-powered ECG signal quality assessment tool using machine learning classifiers.">
+    <link rel="stylesheet" href="static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="bg-layer">
+        <div class="grid-overlay"></div>
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+        <canvas id="ecg-bg-canvas"></canvas>
+    </div>
+
+    <main class="app-container">
+        <!-- Header -->
+        <header class="header-card">
+            <div class="header-inner">
+                <div class="logo-group">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 40 40" width="40" height="40">
+                            <circle cx="20" cy="20" r="18" fill="none" stroke="url(#logoGrad)" stroke-width="2"/>
+                            <polyline points="4,20 12,20 15,10 18,28 21,14 24,24 27,18 30,20 36,20"
+                                      fill="none" stroke="url(#logoGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <defs>
+                                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#06B6D4"/>
+                                    <stop offset="100%" stop-color="#8B5CF6"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1>ECG<span class="accent">Pulse</span></h1>
+                        <p class="tagline">AI-Powered Signal Quality Assessment</p>
+                    </div>
+                </div>
+                <div class="status-pill" id="status-pill">
+                    <span class="status-dot"></span>
+                    <span>System Ready</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Upload Section -->
+        <section class="upload-card" id="upload-section">
+            <div class="upload-inner">
+                <div class="upload-dropzone" id="drop-area">
+                    <div class="dropzone-icon">
+                        <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+                            <rect x="8" y="16" width="48" height="36" rx="6" stroke="#94A3B8" stroke-width="2" stroke-dasharray="4 3"/>
+                            <path d="M32 44V28M32 28l-7 7M32 28l7 7" stroke="url(#uploadGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <defs>
+                                <linearGradient id="uploadGrad" x1="25" y1="28" x2="39" y2="44">
+                                    <stop stop-color="#06B6D4"/>
+                                    <stop offset="1" stop-color="#8B5CF6"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h2>Upload ECG Recording</h2>
+                    <p class="upload-hint">Drag & drop a <strong>.csv</strong> or <strong>.xlsx</strong> file, or click to browse</p>
+                    <input type="file" id="fileElem" accept=".csv,.xlsx,.xls" hidden>
+                    <button class="btn btn-primary" id="browse-btn">
+                        <span>Select File</span>
+                    </button>
+                </div>
+
+                <div id="file-info" class="file-info hidden">
+                    <div class="file-icon">📄</div>
+                    <div class="file-details">
+                        <span class="file-name" id="filename-display"></span>
+                        <span class="file-size" id="filesize-display"></span>
+                    </div>
+                    <button class="btn btn-accent" id="analyze-btn">
+                        <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9V9h2v4zm0-6H9V5h2v2z"/></svg>
+                        <span>Analyze Signal</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="results-section hidden">
+            <!-- Summary Bar -->
+            <div class="summary-bar">
+                <div class="summary-left">
+                    <h2>Analysis Report</h2>
+                    <span class="file-badge" id="result-filename"></span>
+                </div>
+                <div class="summary-stats">
+                    <div class="mini-stat clean-stat">
+                        <span class="mini-stat-value" id="stat-clean">0</span>
+                        <span class="mini-stat-label">Clean</span>
+                    </div>
+                    <div class="mini-stat noisy-stat">
+                        <span class="mini-stat-value" id="stat-noisy">0</span>
+                        <span class="mini-stat-label">Noisy</span>
+                    </div>
+                    <div class="mini-stat total-stat">
+                        <span class="mini-stat-value" id="stat-total">0</span>
+                        <span class="mini-stat-label">Total</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Gauge -->
+            <div class="gauge-row">
+                <div class="gauge-card">
+                    <h3>Overall Signal Quality</h3>
+                    <div class="gauge-container">
+                        <svg viewBox="0 0 200 120" class="gauge-svg">
+                            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#1E293B" stroke-width="14" stroke-linecap="round"/>
+                            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-linecap="round"
+                                  id="gauge-arc" stroke-dasharray="0 251.2"/>
+                            <defs>
+                                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#E74C3C"/>
+                                    <stop offset="50%" stop-color="#F59E0B"/>
+                                    <stop offset="100%" stop-color="#27AE60"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="gauge-value" id="gauge-value">--%</div>
+                        <div class="gauge-label" id="gauge-label">Calculating...</div>
+                    </div>
+                </div>
+
+                <!-- Signal Map -->
+                <div class="map-card">
+                    <h3>Signal Quality Timeline</h3>
+                    <div class="map-image-container" id="signal-map-container">
+                        <div class="map-placeholder">
+                            <div class="shimmer-block"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Window Cards -->
+            <div class="windows-header">
+                <h3>Window-by-Window Analysis</h3>
+                <div class="legend">
+                    <span class="legend-item"><span class="legend-dot clean-dot"></span> Clean</span>
+                    <span class="legend-item"><span class="legend-dot noisy-dot"></span> Noisy</span>
+                </div>
+            </div>
+            <div class="windows-grid" id="windows-container"></div>
+        </section>
+
+        <!-- Loader -->
+        <div id="loader" class="loader-overlay hidden">
+            <div class="loader-card">
+                <div class="ecg-loader">
+                    <svg viewBox="0 0 200 60" class="ecg-line-svg">
+                        <polyline class="ecg-trace" points="0,30 20,30 25,30 30,10 35,50 40,20 45,35 50,30 70,30 90,30 95,30 100,10 105,50 110,20 115,35 120,30 140,30 160,30 165,30 170,10 175,50 180,20 185,35 190,30 200,30"
+                            fill="none" stroke="url(#loaderGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#06B6D4"/>
+                                <stop offset="100%" stop-color="#8B5CF6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <p class="loader-text">Analyzing ECG Signal</p>
+                <p class="loader-subtext">Classifying windows with Random Forest model...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="static/script.js"></script>
+</body>
+</html>

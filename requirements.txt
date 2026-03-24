@@ -1,0 +1,9 @@
+numpy
+pandas
+Flask
+Werkzeug
+matplotlib
+scipy
+scikit-learn
+tqdm
+openpyxl
